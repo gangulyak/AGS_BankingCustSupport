@@ -1,0 +1,48 @@
+2026-02-04 15:30:45 | INFO | [ClassifierAgent] INPUT: hello | OUTPUT: label=query, fallback_used=False
+2026-02-04 15:30:45 | INFO | [QueryHandlerAgent] INPUT: hello | OUTPUT: General query logged with ticket #765624
+2026-02-04 15:30:45 | INFO | [Controller] INPUT: hello | OUTPUT: Thank you for reaching out. I’ve created a support ticket #765624 so our team can get back to you with the information you requested.
+2026-02-04 15:36:22 | INFO | [ClassifierAgent] INPUT: Hello | OUTPUT: label=query, fallback_used=False
+2026-02-04 15:36:22 | INFO | [QueryHandlerAgent] INPUT: Hello | OUTPUT: Greeting detected – no ticket created
+2026-02-04 15:36:22 | INFO | [Controller] INPUT: Hello | OUTPUT: Hello! How can I assist you today?
+2026-02-04 15:37:04 | INFO | [ClassifierAgent] INPUT: I am not happy with you folks | OUTPUT: label=negative_feedback, fallback_used=False
+2026-02-04 15:37:04 | INFO | [FeedbackHandlerAgent] INPUT: I am not happy with you folks | OUTPUT: Negative feedback logged with ticket #486227
+2026-02-04 15:37:04 | INFO | [Controller] INPUT: I am not happy with you folks | OUTPUT: We apologize for the inconvenience. A new ticket #486227 has been generated, and our team will follow up shortly.
+2026-02-04 15:37:39 | INFO | [ClassifierAgent] INPUT: But am happy that you responded | OUTPUT: label=positive_feedback, fallback_used=False
+2026-02-04 15:37:39 | INFO | [FeedbackHandlerAgent] INPUT: But am happy that you responded | OUTPUT: Positive feedback acknowledged
+2026-02-04 15:37:39 | INFO | [Controller] INPUT: But am happy that you responded | OUTPUT: Thank you for your kind words, Customer_JJ! We’re delighted to assist you.
+2026-02-04 15:37:59 | INFO | [ClassifierAgent] INPUT: Tell me about treasury services | OUTPUT: label=query, fallback_used=False
+2026-02-04 15:37:59 | INFO | [QueryHandlerAgent] INPUT: Tell me about treasury services | OUTPUT: General query logged with ticket #425151
+2026-02-04 15:37:59 | INFO | [Controller] INPUT: Tell me about treasury services | OUTPUT: Thank you for reaching out. I’ve created a support ticket #425151 so our team can get back to you with the information you requested.
+2026-02-04 15:41:33 | INFO | [ClassifierAgent] INPUT: Hi Bank! | OUTPUT: label=query, fallback_used=False
+2026-02-04 15:41:33 | INFO | [QueryHandlerAgent] INPUT: Hi Bank! | OUTPUT: General query logged with ticket #109264
+2026-02-04 15:41:33 | INFO | [Controller] INPUT: Hi Bank! | OUTPUT: Thank you for reaching out. I’ve created a support ticket #109264 so our team can get back to you with the information you requested.
+2026-02-04 15:41:44 | INFO | [ClassifierAgent] INPUT: Hello | OUTPUT: label=query, fallback_used=False
+2026-02-04 15:41:44 | INFO | [QueryHandlerAgent] INPUT: Hello | OUTPUT: Greeting detected – no ticket created
+2026-02-04 15:41:44 | INFO | [Controller] INPUT: Hello | OUTPUT: Hello! How can I assist you today?
+2026-02-04 15:44:26 | INFO | [ClassifierAgent] INPUT: Hello | OUTPUT: label=query, fallback_used=False
+2026-02-04 15:44:26 | INFO | [QueryHandlerAgent] INPUT: Hello | OUTPUT: Greeting detected – no ticket created
+2026-02-04 15:44:26 | INFO | [Controller] INPUT: Hello | OUTPUT: Hello! How can I assist you today?
+2026-02-04 15:44:44 | INFO | [ClassifierAgent] INPUT: Tell me about your International Credit Cards | OUTPUT: label=query, fallback_used=False
+2026-02-04 15:44:44 | INFO | [QueryHandlerAgent] INPUT: Tell me about your International Credit Cards | OUTPUT: General query logged with ticket #105103
+2026-02-04 15:44:44 | INFO | [Controller] INPUT: Tell me about your International Credit Cards | OUTPUT: Thank you for reaching out. I’ve created a support ticket #105103 so our team can get back to you with the information you requested.
+2026-02-08 05:07:42 | INFO | [ClassifierAgent] INPUT: My credit card application is not moving at all! | OUTPUT: label=negative_feedback, fallback_used=False
+2026-02-08 05:07:42 | INFO | [FeedbackHandlerAgent] INPUT: My credit card application is not moving at all! | OUTPUT: Negative feedback logged with ticket #762441
+2026-02-08 05:07:42 | INFO | [Controller] INPUT: My credit card application is not moving at all! | OUTPUT: We apologize for the inconvenience. A new ticket #762441 has been generated, and our team will follow up shortly.
+2026-02-08 05:08:00 | INFO | [ClassifierAgent] INPUT: I am happy with your service | OUTPUT: label=positive_feedback, fallback_used=False
+2026-02-08 05:08:00 | INFO | [FeedbackHandlerAgent] INPUT: I am happy with your service | OUTPUT: Positive feedback acknowledged
+2026-02-08 05:08:00 | INFO | [Controller] INPUT: I am happy with your service | OUTPUT: Thank you for your kind words, TestCust! We’re delighted to assist you.
+2026-02-08 05:08:25 | INFO | [ClassifierAgent] INPUT: May I know about zero balance account? | OUTPUT: label=query, fallback_used=False
+2026-02-08 05:08:25 | INFO | [QueryHandlerAgent] INPUT: May I know about zero balance account? | OUTPUT: General query logged with ticket #863207
+2026-02-08 05:08:25 | INFO | [Controller] INPUT: May I know about zero balance account? | OUTPUT: Thank you for reaching out. I’ve created a support ticket #863207 so our team can get back to you with the information you requested.
+2026-02-08 05:08:47 | INFO | [ClassifierAgent] INPUT: ok coming back about my last query.. | OUTPUT: label=query, fallback_used=False
+2026-02-08 05:08:47 | INFO | [QueryHandlerAgent] INPUT: ok coming back about my last query.. | OUTPUT: General query logged with ticket #794069
+2026-02-08 05:08:47 | INFO | [Controller] INPUT: ok coming back about my last query.. | OUTPUT: Thank you for reaching out. I’ve created a support ticket #794069 so our team can get back to you with the information you requested.
+2026-02-08 05:09:17 | INFO | [ClassifierAgent] INPUT: Let me know the status of the last ticket (ticket 794069) | OUTPUT: label=query, fallback_used=False
+2026-02-08 05:09:17 | INFO | [QueryHandlerAgent] INPUT: Let me know the status of the last ticket (ticket 794069) | OUTPUT: Your ticket #794069 is currently marked as: Open.
+2026-02-08 05:09:17 | INFO | [Controller] INPUT: Let me know the status of the last ticket (ticket 794069) | OUTPUT: Your ticket #794069 is currently marked as: Open.
+2026-02-08 05:09:46 | INFO | [ClassifierAgent] INPUT: ok coming back about my last query. A ticket was raised for that | OUTPUT: label=query, fallback_used=False
+2026-02-08 05:09:46 | INFO | [QueryHandlerAgent] INPUT: ok coming back about my last query. A ticket was raised for that | OUTPUT: Ticket-related query without ticket number
+2026-02-08 05:09:46 | INFO | [Controller] INPUT: ok coming back about my last query. A ticket was raised for that | OUTPUT: I can help with that. Please provide your ticket number so I can check the status for you.
+2026-02-08 05:10:16 | INFO | [ClassifierAgent] INPUT: Tell me the last ticket status (ticket 794069) | OUTPUT: label=query, fallback_used=False
+2026-02-08 05:10:16 | INFO | [QueryHandlerAgent] INPUT: Tell me the last ticket status (ticket 794069) | OUTPUT: Your ticket #794069 is currently marked as: Open.
+2026-02-08 05:10:16 | INFO | [Controller] INPUT: Tell me the last ticket status (ticket 794069) | OUTPUT: Your ticket #794069 is currently marked as: Open.
