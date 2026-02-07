@@ -1,11 +1,4 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2867
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-{\*\expandedcolortbl;;}
-\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
-
-\f0\fs24 \cf0 # Banking Customer Support AI Agent\
+# Banking Customer Support AI Agent\
 ### A Multi-Agent Generative AI System\
 \
 ## Overview\
@@ -99,31 +92,27 @@ All agent interactions and routing decisions are logged using Python\'92s loggin
 \
 ## Directory Structure\
 \
-banking_support_ai/\
-\uc0\u9474 \
-\uc0\u9500 \u9472 \u9472  app.py                 # Streamlit UI and session memory\
-\uc0\u9500 \u9472 \u9472  controller.py          # Central routing and orchestration\
-\uc0\u9474 \
-\uc0\u9500 \u9472 \u9472  agents/\
-\uc0\u9474    \u9500 \u9472 \u9472  classifier_agent.py\
-\uc0\u9474    \u9500 \u9472 \u9472  feedback_handler_agent.py\
-\uc0\u9474    \u9492 \u9472 \u9472  query_handler_agent.py\
-\uc0\u9474 \
-\uc0\u9500 \u9472 \u9472  database/\
-\uc0\u9474    \u9500 \u9472 \u9472  db.py\
-\uc0\u9474    \u9492 \u9472 \u9472  support_tickets.db\
-\uc0\u9474 \
-\uc0\u9500 \u9472 \u9472  utils/\
-\uc0\u9474    \u9500 \u9472 \u9472  logger.py\
-\uc0\u9474    \u9492 \u9472 \u9472  prompt_templates.py\
-\uc0\u9474 \
-\uc0\u9492 \u9472 \u9472  requirements.txt\
-\
-\
-\
----\
-\
-## Summary\
-\
-This project demonstrates a clean and realistic approach to building GenAI-powered support systems by combining language intelligence with robust software engineering principles. The resulting system is modular, explainable, and aligned with real-world banking support workflows.\
-}
+banking_support_ai/
+
+app.py                 # Streamlit UI and session memory\
+controller.py          # Central routing and orchestration\
+
+agents/
+classifier_agent.py
+feedback_handler_agent.py
+query_handler_agent.py
+
+database/
+db.py
+support_tickets.db
+
+utils/
+logger.py
+prompt_templates.py
+
+requirements.txt
+README.md               # This file
+
+## Summary
+
+This project demonstrates a clean and realistic approach to building GenAI-powered support systems by combining language intelligence with robust software engineering principles. The resulting system is modular, explainable, and aligned with real-world banking support workflows.
