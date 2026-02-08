@@ -10,36 +10,35 @@ Responsibilities:
 - Query ticket status
 """
 
+import os
 import sqlite3
 from pathlib import Path
 from typing import Optional
 
-import os
-import sqlite3
 
 # ------------------------------------------------------------------
 # DATABASE PATH SETUP (CLOUD-SAFE)
 # ------------------------------------------------------------------
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "support_tickets.db")
+# Absolute path to this directory (banking_support_ai/database)
+BASE_DIR = Path(__file__).resolve().parent
 
-# Ensure the directory exists (critical for Streamlit Cloud)
-os.makedirs(BASE_DIR, exist_ok=True)
+# Ensure directory exists (critical for Streamlit Cloud)
+BASE_DIR.mkdir(parents=True, exist_ok=True)
+
+# Absolute path to database file
+DB_PATH = BASE_DIR / "support_tickets.db"
 
 
 # ------------------------------------------------------------------
-# DATABASE CONFIGURATION
+# DATABASE CONNECTION
 # ------------------------------------------------------------------
-
-DB_PATH = Path(__file__).resolve().parent / "support_tickets.db"
-
 
 def _get_connection():
     """
     Creates and returns a SQLite database connection.
     """
-    return sqlite3.connect(DB_PATH)
+    return sqlite3.connect(DB_PATH, check_same_thread=False)
 
 
 # ------------------------------------------------------------------
@@ -77,7 +76,7 @@ def insert_ticket(
     """
     Inserts a new support ticket into the database.
 
-    Handles ticket number collisions gracefully.
+    Raises sqlite3.IntegrityError on ticket number collision.
     """
 
     initialize_database()
@@ -85,21 +84,15 @@ def insert_ticket(
     with _get_connection() as conn:
         cursor = conn.cursor()
 
-        try:
-            cursor.execute("""
-                INSERT INTO support_tickets (
-                    ticket_number,
-                    issue_description,
-                    status
-                ) VALUES (?, ?, ?)
-            """, (ticket_number, issue_description, status))
+        cursor.execute("""
+            INSERT INTO support_tickets (
+                ticket_number,
+                issue_description,
+                status
+            ) VALUES (?, ?, ?)
+        """, (ticket_number, issue_description, status))
 
-            conn.commit()
-
-        except sqlite3.IntegrityError:
-            # Ticket number collision (PRIMARY KEY constraint)
-            # Re-raise so the caller can decide what to do
-            raise
+        conn.commit()
 
 
 # ------------------------------------------------------------------
@@ -128,7 +121,4 @@ def get_ticket_status(ticket_number: int) -> Optional[str]:
 
         row = cursor.fetchone()
 
-        if row:
-            return row[0]
-
-        return None
+        return row[0] if row else None
