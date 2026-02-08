@@ -14,6 +14,19 @@ import sqlite3
 from pathlib import Path
 from typing import Optional
 
+import os
+import sqlite3
+
+# ------------------------------------------------------------------
+# DATABASE PATH SETUP (CLOUD-SAFE)
+# ------------------------------------------------------------------
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "support_tickets.db")
+
+# Ensure the directory exists (critical for Streamlit Cloud)
+os.makedirs(BASE_DIR, exist_ok=True)
+
 
 # ------------------------------------------------------------------
 # DATABASE CONFIGURATION
