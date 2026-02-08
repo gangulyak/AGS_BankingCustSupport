@@ -187,6 +187,11 @@ Streamlit UI for the Banking Customer Support
 Multi-Agent System with session-based conversational memory.
 """
 
+"""
+Streamlit UI for the Banking Customer Support
+Multi-Agent System with session-based conversational memory.
+"""
+
 import re
 import sqlite3
 import pandas as pd
@@ -212,11 +217,19 @@ st.write(
 )
 
 # ------------------------------------------------------------------
-# SESSION STATE
+# SESSION STATE (HARDENED)
 # ------------------------------------------------------------------
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
+# 🔴 HARD FIX: purge incompatible old messages
+else:
+    st.session_state.messages = [
+        (role, msg)
+        for role, msg in st.session_state.messages
+        if role in ("user", "assistant")
+    ]
 
 if "customer_name" not in st.session_state:
     st.session_state.customer_name = "Customer"
@@ -243,7 +256,7 @@ for role, content in st.session_state.messages:
         st.markdown(content)
 
 # ------------------------------------------------------------------
-# CHAT INPUT (CORRECT PATTERN)
+# CHAT INPUT (CORRECT + SAFE)
 # ------------------------------------------------------------------
 
 user_message = st.chat_input("Type your message")
@@ -262,9 +275,10 @@ if user_message:
             f"(ticket {st.session_state.last_ticket_number})"
         )
 
-    # Store user message
+    # Store USER message
     st.session_state.messages.append(("user", original_message))
 
+    # Generate AGENT response
     with st.chat_message("assistant"):
         with st.spinner("Processing..."):
             response = handle_user_input(
@@ -273,7 +287,7 @@ if user_message:
             )
             st.markdown(response)
 
-    # Store agent response
+    # Store AGENT message
     st.session_state.messages.append(("assistant", response))
 
     # Remember ticket number
