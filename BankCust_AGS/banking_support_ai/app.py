@@ -191,6 +191,10 @@ Multi-Agent System with session-based conversational memory.
 Streamlit UI for the Banking Customer Support
 Multi-Agent System with session-based conversational memory.
 """
+"""
+Streamlit UI for the Banking Customer Support
+Multi-Agent System with session-based conversational memory.
+"""
 
 import re
 import sqlite3
@@ -199,6 +203,10 @@ import streamlit as st
 
 from controller import handle_user_input
 
+
+# ------------------------------------------------------------------
+# PAGE CONFIG
+# ------------------------------------------------------------------
 
 st.set_page_config(
     page_title="Banking Customer Support AI",
@@ -212,7 +220,9 @@ st.write(
     "multi-agent AI architecture with session-based memory."
 )
 
-# ---------------- SESSION STATE ----------------
+# ------------------------------------------------------------------
+# SESSION STATE
+# ------------------------------------------------------------------
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -224,7 +234,9 @@ if "last_ticket_number" not in st.session_state:
     st.session_state.last_ticket_number = None
 
 
-# ---------------- CUSTOMER NAME ----------------
+# ------------------------------------------------------------------
+# CUSTOMER NAME
+# ------------------------------------------------------------------
 
 st.session_state.customer_name = st.text_input(
     "Customer Name",
@@ -232,14 +244,18 @@ st.session_state.customer_name = st.text_input(
 )
 
 
-# ---------------- CHAT DISPLAY ----------------
+# ------------------------------------------------------------------
+# CHAT DISPLAY
+# ------------------------------------------------------------------
 
 for role, content in st.session_state.messages:
     with st.chat_message(role):
         st.markdown(content)
 
 
-# ---------------- ADMIN VIEW (MUST BE ABOVE INPUT) ----------------
+# ------------------------------------------------------------------
+# ADMIN / DEBUG VIEW (ABOVE INPUT)
+# ------------------------------------------------------------------
 
 with st.expander("🛠 Admin / Debug View"):
     st.write(
@@ -249,6 +265,7 @@ with st.expander("🛠 Admin / Debug View"):
 
     try:
         from database.db import DB_PATH
+
         conn = sqlite3.connect(DB_PATH, check_same_thread=False)
         df = pd.read_sql_query(
             "SELECT ticket_number, issue_description, status FROM support_tickets",
@@ -265,13 +282,16 @@ with st.expander("🛠 Admin / Debug View"):
         st.error(f"Unable to load tickets: {e}")
 
 
-# ---------------- CHAT INPUT (MUST BE LAST) ----------------
+# ------------------------------------------------------------------
+# CHAT INPUT (MUST BE LAST)
+# ------------------------------------------------------------------
 
 user_message = st.chat_input("Type your message")
 
 if user_message:
     original_message = user_message
 
+    # Resolve "last / my / previous ticket"
     if (
         st.session_state.last_ticket_number
         and re.search(r"\b(last|my|previous)\s+ticket\b", user_message.lower())
@@ -294,17 +314,27 @@ if user_message:
     # Store agent response
     st.session_state.messages.append(("assistant", response))
 
-    # Track ticket number
+    # Remember ticket number
     match = re.search(r"#(\d+)", response)
     if match:
         st.session_state.last_ticket_number = int(match.group(1))
 
-    st.experimental_rerun()
+    st.rerun()
 
 
-# ---------------- CLEAR ----------------
+# ------------------------------------------------------------------
+# CLEAR CONVERSATION
+# ------------------------------------------------------------------
 
 if st.button("Clear conversation"):
     st.session_state.messages = []
     st.session_state.last_ticket_number = None
-    st.experimental_rerun()
+    st.rerun()
+
+
+st.caption(
+    "Session-based memory is maintained at the UI layer. "
+    "Backend agents remain stateless."
+)
+
+
