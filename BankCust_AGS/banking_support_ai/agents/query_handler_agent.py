@@ -10,6 +10,7 @@ Responsibilities:
 
 import re
 import random
+import sqlite3
 from typing import Optional
 
 from utils.logger import log_event
@@ -31,12 +32,12 @@ def handle_query(user_message: str) -> str:
     4. General informational query → open a new support ticket
     """
 
-    message_lower = user_message.lower()
+    message_lower = user_message.lower().strip()
 
     # --------------------------------------------------------------
     # CASE 0: Greeting / small-talk
     # --------------------------------------------------------------
-    if _is_greeting(user_message):
+    if _is_greeting(message_lower):
         response = "Hello! How can I assist you today?"
 
         log_event(
@@ -91,26 +92,35 @@ def handle_query(user_message: str) -> str:
         return response
 
     # --------------------------------------------------------------
-    # CASE 3: General informational query → open new ticket
+    # CASE 3: General informational query → open new ticket (SAFE)
     # --------------------------------------------------------------
-    new_ticket_number = _generate_ticket_number()
+    ticket_number = _create_ticket_with_retry(user_message)
 
-    insert_ticket(
-        ticket_number=new_ticket_number,
-        issue_description=user_message,
-        status="Open"
-    )
+    if ticket_number is None:
+        # Extremely rare: DB failure after retries
+        response = (
+            "We’re currently experiencing a technical issue while creating "
+            "your support ticket. Please try again shortly."
+        )
+
+        log_event(
+            agent="QueryHandlerAgent",
+            input_text=user_message,
+            output_text="Ticket creation failed after retries"
+        )
+
+        return response
 
     response = (
         "Thank you for reaching out. "
-        f"I’ve created a support ticket #{new_ticket_number} so our team can "
+        f"I’ve created a support ticket #{ticket_number} so our team can "
         "get back to you with the information you requested."
     )
 
     log_event(
         agent="QueryHandlerAgent",
         input_text=user_message,
-        output_text=f"General query logged with ticket #{new_ticket_number}"
+        output_text=f"General query logged with ticket #{ticket_number}"
     )
 
     return response
@@ -128,11 +138,38 @@ def _extract_ticket_number(message: str) -> Optional[int]:
     return int(match.group(1)) if match else None
 
 
-def _generate_ticket_number() -> int:
+def _create_ticket_with_retry(
+    issue_description: str,
+    max_retries: int = 5
+) -> Optional[int]:
     """
-    Generates a random 6-digit ticket number.
+    Attempts to create a support ticket, retrying on
+    ticket number collisions.
+
+    Returns:
+    - ticket_number if successful
+    - None if all retries fail
     """
-    return random.randint(100000, 999999)
+    for attempt in range(max_retries):
+        ticket_number = random.randint(100000, 999999)
+
+        try:
+            insert_ticket(
+                ticket_number=ticket_number,
+                issue_description=issue_description,
+                status="Open"
+            )
+            return ticket_number
+
+        except sqlite3.IntegrityError:
+            # Ticket number collision — retry
+            continue
+
+        except Exception as e:
+            # Any other DB error — abort
+            return None
+
+    return None
 
 
 def _is_greeting(message: str) -> bool:
@@ -140,9 +177,7 @@ def _is_greeting(message: str) -> bool:
     Detects simple greetings or conversational fillers
     that should not trigger ticket creation.
     """
-    message = message.lower().strip()
-
-    greetings = [
+    greetings = {
         "hello",
         "hi",
         "hey",
@@ -152,7 +187,7 @@ def _is_greeting(message: str) -> bool:
         "thanks",
         "thank you",
         "ok",
-        "okay"
-    ]
+        "okay",
+    }
 
     return message in greetings
