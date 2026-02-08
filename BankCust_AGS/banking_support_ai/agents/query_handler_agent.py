@@ -23,13 +23,21 @@ from database.db import get_ticket_status, insert_ticket
 def handle_query(user_message: str) -> str:
     """
     Handles user queries.
+
+    Logic:
+    1. Greeting → polite response, no ticket
+    2. Ticket number present → return ticket status
+    3. Explicit ticket reference without number → ask for ticket number
+    4. General informational query → open a new support ticket
     """
 
-    # ✅ NEW: Greeting / small-talk guard
+    message_lower = user_message.lower()
+
+    # --------------------------------------------------------------
+    # CASE 0: Greeting / small-talk
+    # --------------------------------------------------------------
     if _is_greeting(user_message):
-        response = (
-            "Hello! How can I assist you today?"
-        )
+        response = "Hello! How can I assist you today?"
 
         log_event(
             agent="QueryHandlerAgent",
@@ -39,20 +47,11 @@ def handle_query(user_message: str) -> str:
 
         return response
 
-    """
-    Handles user queries.
-
-    Logic:
-    1. If ticket number is present → return ticket status
-    2. If ticket-related intent but no ticket number → ask for ticket number
-    3. If general query → open a new support ticket
-    """
-
-    ticket_number = _extract_ticket_number(user_message)
-
     # --------------------------------------------------------------
     # CASE 1: Ticket number present → ticket status query
     # --------------------------------------------------------------
+    ticket_number = _extract_ticket_number(user_message)
+
     if ticket_number is not None:
         status = get_ticket_status(ticket_number)
 
@@ -75,9 +74,9 @@ def handle_query(user_message: str) -> str:
         return response
 
     # --------------------------------------------------------------
-    # CASE 2: Ticket-related intent but no ticket number
+    # CASE 2: Explicit ticket reference but no ticket number
     # --------------------------------------------------------------
-    if _is_ticket_related_query(user_message):
+    if "ticket" in message_lower:
         response = (
             "I can help with that. Please provide your ticket number so "
             "I can check the status for you."
@@ -86,7 +85,7 @@ def handle_query(user_message: str) -> str:
         log_event(
             agent="QueryHandlerAgent",
             input_text=user_message,
-            output_text="Ticket-related query without ticket number"
+            output_text="Ticket reference without ticket number"
         )
 
         return response
@@ -129,30 +128,12 @@ def _extract_ticket_number(message: str) -> Optional[int]:
     return int(match.group(1)) if match else None
 
 
-def _is_ticket_related_query(message: str) -> bool:
-    """
-    Determines whether a query is ticket-related
-    without explicitly providing a ticket number.
-    """
-    message = message.lower()
-
-    ticket_keywords = [
-        "ticket",
-        "status",
-        "issue",
-        "complaint",
-        "request",
-        "case"
-    ]
-
-    return any(keyword in message for keyword in ticket_keywords)
-
-
 def _generate_ticket_number() -> int:
     """
     Generates a random 6-digit ticket number.
     """
     return random.randint(100000, 999999)
+
 
 def _is_greeting(message: str) -> bool:
     """
