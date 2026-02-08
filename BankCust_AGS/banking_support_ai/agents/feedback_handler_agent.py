@@ -10,12 +10,10 @@ Responsibilities:
 """
 
 import random
+import sqlite3
+from typing import Optional
 
 from utils.logger import log_event
-
-# NOTE:
-# Database functions will be implemented in database/db.py
-# We import them here, but actual DB logic will come next.
 from database.db import insert_ticket
 
 
@@ -44,25 +42,34 @@ def handle_positive_feedback(user_message: str, customer_name: str) -> str:
 
 
 # ------------------------------------------------------------------
-# NEGATIVE FEEDBACK HANDLER
+# NEGATIVE FEEDBACK HANDLER (ROBUST)
 # ------------------------------------------------------------------
 
 def handle_negative_feedback(user_message: str, customer_name: str) -> str:
     """
     Handles negative customer feedback by:
-    - Generating a unique 6-digit ticket number
+    - Safely generating a unique 6-digit ticket number
     - Creating a new unresolved support ticket
     - Returning an empathetic response to the user
     """
 
-    ticket_number = _generate_ticket_number()
+    ticket_number = _create_ticket_with_retry(user_message)
 
-    # Persist ticket (DB logic will be added in db.py)
-    insert_ticket(
-        ticket_number=ticket_number,
-        issue_description=user_message,
-        status="Open"
-    )
+    if ticket_number is None:
+        # Extremely rare DB failure case
+        response = (
+            "We’re sorry for the inconvenience. "
+            "We’re currently experiencing a technical issue while creating "
+            "your support ticket. Please try again shortly."
+        )
+
+        log_event(
+            agent="FeedbackHandlerAgent",
+            input_text=user_message,
+            output_text="Negative feedback received but ticket creation failed"
+        )
+
+        return response
 
     response = (
         "We apologize for the inconvenience. "
@@ -83,11 +90,36 @@ def handle_negative_feedback(user_message: str, customer_name: str) -> str:
 # HELPER FUNCTIONS
 # ------------------------------------------------------------------
 
-def _generate_ticket_number() -> int:
+def _create_ticket_with_retry(
+    issue_description: str,
+    max_retries: int = 5
+) -> Optional[int]:
     """
-    Generates a random 6-digit ticket number.
+    Attempts to create a support ticket, retrying on
+    ticket number collisions.
 
-    Note:
-    - Collision handling will be addressed at the DB layer
+    Returns:
+    - ticket_number if successful
+    - None if all retries fail
     """
-    return random.randint(100000, 999999)
+
+    for _ in range(max_retries):
+        ticket_number = random.randint(100000, 999999)
+
+        try:
+            insert_ticket(
+                ticket_number=ticket_number,
+                issue_description=issue_description,
+                status="Open"
+            )
+            return ticket_number
+
+        except sqlite3.IntegrityError:
+            # Ticket number collision — retry
+            continue
+
+        except Exception:
+            # Any other DB error — abort
+            return None
+
+    return None
