@@ -182,9 +182,13 @@ Responsibilities:
 - Provide an optional admin/debug view
 """
 
+"""
+Streamlit UI for the Banking Customer Support
+Multi-Agent System with session-based conversational memory.
+"""
+
 import re
 import sqlite3
-
 import pandas as pd
 import streamlit as st
 
@@ -208,11 +212,11 @@ st.write(
 )
 
 # ------------------------------------------------------------------
-# SESSION STATE INITIALIZATION
+# SESSION STATE
 # ------------------------------------------------------------------
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
 if "customer_name" not in st.session_state:
     st.session_state.customer_name = "Customer"
@@ -222,7 +226,7 @@ if "last_ticket_number" not in st.session_state:
 
 
 # ------------------------------------------------------------------
-# CUSTOMER NAME INPUT
+# CUSTOMER NAME
 # ------------------------------------------------------------------
 
 st.session_state.customer_name = st.text_input(
@@ -234,82 +238,58 @@ st.session_state.customer_name = st.text_input(
 # CHAT DISPLAY
 # ------------------------------------------------------------------
 
-st.markdown("### 💬 Conversation")
-
-for role, message in st.session_state.chat_history:
-    if role == "User":
-        st.markdown(f"**🧑 User:** {message}")
-    else:
-        st.markdown(f"**🤖 Agent:** {message}")
+for role, content in st.session_state.messages:
+    with st.chat_message(role):
+        st.markdown(content)
 
 # ------------------------------------------------------------------
-# USER INPUT FORM
+# CHAT INPUT (CORRECT PATTERN)
 # ------------------------------------------------------------------
 
-with st.form(key="chat_form", clear_on_submit=True):
-    user_message = st.text_input(
-        "Type your message",
-        placeholder="e.g., My debit card has not arrived."
-    )
-    send_clicked = st.form_submit_button("Send")
+user_message = st.chat_input("Type your message")
 
-# ------------------------------------------------------------------
-# FORM SUBMISSION HANDLING (CRITICAL FIX)
-# ------------------------------------------------------------------
+if user_message:
+    original_message = user_message
 
-if send_clicked:
-
-    if not user_message.strip():
-        st.warning("Please enter a message before sending.")
-    else:
-        original_message = user_message
-
-        # Resolve "last / my / previous ticket" using session memory
-        if (
-            st.session_state.last_ticket_number
-            and re.search(r"\b(last|my|previous)\s+ticket\b", user_message.lower())
-            and not re.search(r"\d+", user_message)
-        ):
-            user_message = (
-                f"{user_message} "
-                f"(ticket {st.session_state.last_ticket_number})"
-            )
-
-        # 1️⃣ Append USER message
-        st.session_state.chat_history.append(
-            ("User", original_message)
+    # Resolve "last / my / previous ticket"
+    if (
+        st.session_state.last_ticket_number
+        and re.search(r"\b(last|my|previous)\s+ticket\b", user_message.lower())
+        and not re.search(r"\d+", user_message)
+    ):
+        user_message = (
+            f"{user_message} "
+            f"(ticket {st.session_state.last_ticket_number})"
         )
 
-        # 2️⃣ Generate AGENT response
+    # Store user message
+    st.session_state.messages.append(("user", original_message))
+
+    with st.chat_message("assistant"):
         with st.spinner("Processing..."):
             response = handle_user_input(
                 user_message=user_message,
                 customer_name=st.session_state.customer_name
             )
+            st.markdown(response)
 
-        # 3️⃣ Append AGENT response (THIS IS ESSENTIAL)
-        st.session_state.chat_history.append(
-            ("Agent", response)
-        )
+    # Store agent response
+    st.session_state.messages.append(("assistant", response))
 
-        # 4️⃣ Extract and remember ticket number
-        match = re.search(r"#(\d+)", response)
-        if match:
-            st.session_state.last_ticket_number = int(match.group(1))
+    # Remember ticket number
+    match = re.search(r"#(\d+)", response)
+    if match:
+        st.session_state.last_ticket_number = int(match.group(1))
 
-        # 5️⃣ Rerun ONLY after both messages are saved
-        st.rerun()
 
 # ------------------------------------------------------------------
-# OPTIONAL CONTROLS
+# CLEAR CONVERSATION
 # ------------------------------------------------------------------
-
-st.markdown("---")
 
 if st.button("Clear conversation"):
-    st.session_state.chat_history = []
+    st.session_state.messages = []
     st.session_state.last_ticket_number = None
-    st.rerun()
+    st.experimental_rerun()
 
 st.caption(
     "Session-based memory is maintained at the UI layer. "
@@ -317,7 +297,7 @@ st.caption(
 )
 
 # ------------------------------------------------------------------
-# ADMIN / DEBUG VIEW (OPTIONAL)
+# ADMIN / DEBUG VIEW
 # ------------------------------------------------------------------
 
 with st.expander("🛠 Admin / Debug View"):
@@ -343,4 +323,3 @@ with st.expander("🛠 Admin / Debug View"):
 
     except Exception as e:
         st.error(f"Unable to load tickets: {e}")
-
