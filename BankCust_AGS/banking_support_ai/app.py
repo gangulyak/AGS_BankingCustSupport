@@ -1,100 +1,22 @@
 """
 Streamlit UI for the Banking Customer Support
-Multi-Agent System.
+Multi-Agent System with session-based conversational memory.
 
 Responsibilities:
 - Accept user input
 - Invoke the controller
-- Display system responses
-- Provide a simple interaction loop for demonstration
-
-
-import streamlit as st
-
-from controller import handle_user_input
-
-
-# ------------------------------------------------------------------
-# STREAMLIT PAGE CONFIG
-# ------------------------------------------------------------------
-
-st.set_page_config(
-    page_title="Banking Customer Support AI",
-    page_icon="🏦",
-    layout="centered"
-)
-
-st.title("🏦 Banking Customer Support AI Agent")
-st.write(
-    "This assistant handles customer feedback and ticket-related queries "
-    "using a multi-agent AI architecture."
-)
-
-
-# ------------------------------------------------------------------
-# USER INPUT SECTION
-# ------------------------------------------------------------------
-
-customer_name = st.text_input(
-    "Customer Name",
-    value="Customer"
-)
-
-user_message = st.text_area(
-    "Enter your message",
-    placeholder="e.g., My debit card replacement still hasn’t arrived."
-)
-
-
-# ------------------------------------------------------------------
-# SUBMIT ACTION
-# ------------------------------------------------------------------
-
-if st.button("Submit"):
-
-    if not user_message.strip():
-        st.warning("Please enter a message before submitting.")
-    else:
-        with st.spinner("Processing your request..."):
-            response = handle_user_input(
-                user_message=user_message,
-                customer_name=customer_name
-            )
-
-        st.success("Response")
-        st.write(response)
-
-
-# ------------------------------------------------------------------
-# FOOTER
-# ------------------------------------------------------------------
-
-st.markdown("---")
-st.caption(
-    "Demo application for a multi-agent GenAI-based banking support system."
-)
-"""
-"""
-Streamlit UI for the Banking Customer Support
-Multi-Agent System with session-based conversational memory.
-"""
-"""
-Streamlit UI for the Banking Customer Support
-Multi-Agent System with session-based conversational memory.
-"""
-
-"""
-Streamlit UI for the Banking Customer Support
-Multi-Agent System with session-based conversational memory.
+- Display chat-style responses
+- Maintain session-level memory
+- Provide an optional admin/debug view
 """
 
 import re
-import streamlit as st
-from controller import handle_user_input
-
 import sqlite3
-import pandas as pd
 
+import pandas as pd
+import streamlit as st
+
+from controller import handle_user_input
 
 
 # ------------------------------------------------------------------
@@ -123,7 +45,6 @@ if "chat_history" not in st.session_state:
 if "customer_name" not in st.session_state:
     st.session_state.customer_name = "Customer"
 
-# ✅ NEW: remember last ticket number in this session
 if "last_ticket_number" not in st.session_state:
     st.session_state.last_ticket_number = None
 
@@ -137,7 +58,6 @@ st.session_state.customer_name = st.text_input(
     value=st.session_state.customer_name
 )
 
-
 # ------------------------------------------------------------------
 # CHAT DISPLAY
 # ------------------------------------------------------------------
@@ -150,9 +70,8 @@ for role, message in st.session_state.chat_history:
     else:
         st.markdown(f"**🤖 Agent:** {message}")
 
-
 # ------------------------------------------------------------------
-# USER INPUT FORM (CORRECT PATTERN)
+# USER INPUT FORM
 # ------------------------------------------------------------------
 
 with st.form(key="chat_form", clear_on_submit=True):
@@ -161,7 +80,6 @@ with st.form(key="chat_form", clear_on_submit=True):
         placeholder="e.g., My debit card has not arrived."
     )
     send_clicked = st.form_submit_button("Send")
-
 
 # ------------------------------------------------------------------
 # FORM SUBMISSION HANDLING
@@ -174,7 +92,7 @@ if send_clicked:
     else:
         original_message = user_message
 
-        # ✅ NEW: resolve "last / my / previous ticket" using session memory
+        # Resolve "last / my / previous ticket" using session memory
         if (
             st.session_state.last_ticket_number
             and re.search(r"\b(last|my|previous)\s+ticket\b", user_message.lower())
@@ -185,7 +103,7 @@ if send_clicked:
                 f"(ticket {st.session_state.last_ticket_number})"
             )
 
-        # Store user message (original, not modified)
+        # Store user message
         st.session_state.chat_history.append(
             ("User", original_message)
         )
@@ -201,14 +119,12 @@ if send_clicked:
             ("Agent", response)
         )
 
-        # ✅ NEW: extract and remember ticket number from response, if any
+        # Extract and remember ticket number
         match = re.search(r"#(\d{6})", response)
         if match:
             st.session_state.last_ticket_number = int(match.group(1))
 
-        # Rerun to update chat display
         st.rerun()
-
 
 # ------------------------------------------------------------------
 # OPTIONAL CONTROLS
@@ -218,9 +134,8 @@ st.markdown("---")
 
 if st.button("Clear conversation"):
     st.session_state.chat_history = []
-    st.session_state.last_ticket_number = None  # ✅ reset memory
+    st.session_state.last_ticket_number = None
     st.rerun()
-
 
 st.caption(
     "Session-based memory is maintained at the UI layer. "
@@ -238,7 +153,9 @@ with st.expander("🛠 Admin / Debug View"):
     )
 
     try:
-        conn = sqlite3.connect("banking_support_ai/database/support_tickets.db")
+        from database.db import DB_PATH
+
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False)
         df = pd.read_sql_query(
             "SELECT ticket_number, issue_description, status FROM support_tickets",
             conn
