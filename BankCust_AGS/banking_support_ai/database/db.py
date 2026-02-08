@@ -6,11 +6,10 @@ Uses SQLite for lightweight, file-based persistence.
 
 Responsibilities:
 - Create support_tickets table (if not exists)
-- Insert new tickets
+- Insert new tickets (collision-safe)
 - Query ticket status
 """
 
-import os
 import sqlite3
 from pathlib import Path
 from typing import Optional
@@ -65,7 +64,7 @@ def initialize_database():
 
 
 # ------------------------------------------------------------------
-# INSERT OPERATIONS
+# INSERT OPERATIONS (ROBUST)
 # ------------------------------------------------------------------
 
 def insert_ticket(
@@ -76,23 +75,36 @@ def insert_ticket(
     """
     Inserts a new support ticket into the database.
 
-    Raises sqlite3.IntegrityError on ticket number collision.
+    Raises:
+    - sqlite3.IntegrityError if ticket_number already exists
+    - sqlite3.DatabaseError for other DB issues
     """
 
     initialize_database()
 
-    with _get_connection() as conn:
-        cursor = conn.cursor()
+    try:
+        with _get_connection() as conn:
+            cursor = conn.cursor()
 
-        cursor.execute("""
-            INSERT INTO support_tickets (
-                ticket_number,
-                issue_description,
-                status
-            ) VALUES (?, ?, ?)
-        """, (ticket_number, issue_description, status))
+            cursor.execute("""
+                INSERT INTO support_tickets (
+                    ticket_number,
+                    issue_description,
+                    status
+                ) VALUES (?, ?, ?)
+            """, (ticket_number, issue_description, status))
 
-        conn.commit()
+            conn.commit()
+
+    except sqlite3.IntegrityError as e:
+        # Ticket number collision (PRIMARY KEY)
+        print(f"❌ DB INSERT FAILED (collision): ticket #{ticket_number}")
+        raise
+
+    except sqlite3.DatabaseError as e:
+        # Any other SQLite-related error
+        print(f"❌ DB INSERT FAILED (database error): {e}")
+        raise
 
 
 # ------------------------------------------------------------------
